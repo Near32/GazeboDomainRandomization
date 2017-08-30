@@ -1,0 +1,15 @@
+<package>
+  <description brief="GazeboDomainRandom">
+
+     GazeboDomainRandom
+
+  </description>
+  <author>Kevin Denamganai</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/GazeboDomainRandom</url>
+  <depend package="GazeboRL"/>
+
+</package>
+
+
