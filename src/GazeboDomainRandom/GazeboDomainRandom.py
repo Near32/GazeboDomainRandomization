@@ -1,6 +1,7 @@
 import rospy
 import subprocess
 import time
+import os
 import numpy as np
 
 
@@ -13,7 +14,7 @@ class ShapeParams :
 		self.shape_color = shape_color
 		
 class ShapeParamsRanges :
-	def__init__(self, shape_type, shape_scale_max=1.0, shape_pose_min=None, shape_pose_max=None, shape_color_list=['White']) :
+	def __init__(self, shape_type, shape_scale_max=1.0, shape_pose_min=None, shape_pose_max=None, shape_color_list=['White']) :
 		self.shape_type = shape_type
 		self.shape_scale_max= shape_scale_max
 		self.shape_pose_min = shape_pose_min
@@ -61,15 +62,54 @@ class OccParamsRanges :
 class ConfigurationFactory :
 	'''
 	Factory of Configuration...
-	In : list of tuples : ( ShapeFactory , OccurencesParamsRanges )
+	In : list of tuples : ( ShapeFactory , OccParamsRanges )
 	Out : Configuration
 	'''
-	def __init__(self, info=[] ) :
+	def __init__(self, info=[], port=11311 ) :
 		self.info = info
+		self.port = port
+		
+		self.env = os.environ
+		self.env["ROS_MASTER_URI"] = 'http://localhost:'+str(self.port)
+		self.env["GAZEBO_MASTER_URI"]='http://localhost:'+str(self.port+40)
+	
+	
+	def init_roscore(self):
+		self.launcher_roscore = subprocess.Popen(['roscore -p '+str(self.port)+' '],shell=True,env=self.env)
+		time.sleep(2)
+	
+	def init_gazebo(self) :
+		command = ('roslaunch -p '+str(self.port)+' GazeboDomainRandom empty_world.launch')
+		self.launcher_gazebo = subprocess.Popen( command, shell=True, env=self.env)
+		rospy.loginfo("GAZEBO Domain Random : ENVIRONMENT "+str(self.port)+" : launching...")
+		
+	def init_node(self) :
+		rospy.init_node('GazeboDomainRandom_node', anonymous=False)#, xmlrpc_port=self.port)#,tcpros_port=self.port)
+		rospy.on_shutdown(self.close)
+	
+	def close(self) :
+		#TODO :
+		# end services...
+		self.launcher_gazebo.kill()
+		self.launcher_roscore.kill()
+		
+		rospy.loginfo("GAZEBO Domain Random : ENVIRONMENT "+str(self.port)+" : CLOSED.")
+		
+						
+	def init(self) :
+		'''
+		Generate the Gazebo environment (launch roscore, gzserver and so on...)
+		'''
+		self.init_roscore()
+		self.init_gazebo()
+		self.init_node()
+		
+		
+		
 		
 	def generate(self) :
 		newconfig = Configuration()
-		#TODO : generate parms for the new config
+		#TODO : generate params for the new config
 		
 		return newconfig
 		
