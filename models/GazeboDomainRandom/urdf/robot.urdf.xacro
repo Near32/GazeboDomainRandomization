@@ -1,0 +1,680 @@
+<?xml version='1.0'?>
+<robot name="robot_model_teleop_0" xmlns:xacro="http://ros.org/wiki/xacro">
+    
+    <xacro:macro name="macroed_robot">
+    
+    <static>false</static>
+    
+    
+    <link name='chassis'>
+      <pose>0 0 .1 0 0 0</pose>
+      
+      <collision name='collision'>
+        <geometry>
+          <box>
+            <!--<size>.4 .2 .1</size>-->
+            <size>.25 .2 .1</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <!--<size>.4 .2 .1</size>-->
+            <size>.25 .2 .1</size>
+          </box>
+        </geometry>
+        
+        <material>
+					<ambient>0 0 1 1</ambient>
+					<diffuse>0 0 1 1</diffuse>
+					<specular>0.1 0.1 0.1 1</specular>
+					<emissive>0 0 1 1</emissive>
+				</material>
+				
+      </visual>
+
+      <collision name='caster_collision'>
+        <!--<pose>-0.15 0 -0.05 0 0 0</pose>-->
+        <pose>-0.075 0 -0.05 0 0 0</pose>
+        <geometry>
+          <sphere>
+          <radius>.05</radius>
+        </sphere>
+      </geometry>
+
+      <surface>
+        <friction>
+          <ode>
+            <mu>0</mu>
+            <mu2>0</mu2>
+            <slip1>1.0</slip1>
+            <slip2>1.0</slip2>
+          </ode>
+        </friction>
+      </surface>
+    </collision>
+
+    <visual name='caster_visual'>
+      <!--<pose>-0.15 0 -0.05 0 0 0</pose>-->
+      <pose>-0.075 0 -0.05 0 0 0</pose>
+      <geometry>
+        <sphere>
+          <radius>.05</radius>
+        </sphere>
+      </geometry>
+    </visual>
+    
+    <collision name='caster_behind_collision'>
+        <!--<pose>-0.15 0 -0.05 0 0 0</pose>-->
+        <pose>0.075 0 -0.05 0 0 0</pose>
+        <geometry>
+          <sphere>
+          <radius>.05</radius>
+        </sphere>
+      </geometry>
+
+      <surface>
+        <friction>
+          <ode>
+            <mu>0</mu>
+            <mu2>0</mu2>
+            <slip1>1.0</slip1>
+            <slip2>1.0</slip2>
+          </ode>
+        </friction>
+      </surface>
+    </collision>
+
+    <visual name='caster_behind_visual'>
+      <!--<pose>-0.15 0 -0.05 0 0 0</pose>-->
+      <pose>0.075 0 -0.05 0 0 0</pose>
+      <geometry>
+        <sphere>
+          <radius>.05</radius>
+        </sphere>
+      </geometry>
+    </visual>
+    
+    <inertial ><!--name='chassis_inertial'>-->
+			<mass>50.0</mass>
+		</inertial>
+  </link>
+  
+  
+  
+  <gazebo reference="chassis">
+	  <material>Gazebo/WhiteEmissive</material>
+	</gazebo>
+  
+  <link name="left_wheel">
+    <!--<pose>0.1 0.13 0.1 0 1.5707 1.5707</pose>-->
+    <pose>0 0.13 0.07 0 1.5707 1.5707</pose>
+    
+    <collision name="collision">
+      <geometry>
+        <cylinder>
+          <radius>.07</radius>
+          <length>.025</length>
+        </cylinder>
+      </geometry>
+    </collision>
+    
+    
+    <visual name="visual">
+      <geometry>
+        <cylinder>
+          <radius>.07</radius>
+          <length>.025</length>
+        </cylinder>
+      </geometry>
+    </visual>
+  
+  </link>
+
+  
+  
+  <link name="right_wheel">
+    <!--<pose>0.1 -0.13 0.1 0 1.5707 1.5707</pose>-->
+    <pose>0 -0.13 0.07 0 1.5707 1.5707</pose>
+    
+    <collision name="collision">
+      <geometry>
+        <cylinder>
+          <radius>.07</radius>
+          <length>.025</length>
+        </cylinder>
+      </geometry>
+    </collision>
+    
+    
+    <visual name="visual">
+      <geometry>
+        <cylinder>
+          <radius>.07</radius>
+          <length>.025</length>
+        </cylinder>
+      </geometry>
+    </visual>
+  
+  </link>
+  
+  
+  
+  <joint type="revolute" name="left_wheel_hinge">
+    <pose>0 0 -0.5 0 0 0</pose>
+    <child>left_wheel</child>
+    <parent>chassis</parent>
+    <axis>
+      <xyz>0 1 0</xyz>
+    </axis>
+  </joint>
+
+  
+  
+  
+  <joint type="revolute" name="right_wheel_hinge">
+    <pose>0 0 0.5 0 0 0</pose>
+    <child>right_wheel</child>
+    <parent>chassis</parent>
+    <axis>
+      <xyz>0 1 0</xyz>
+    </axis>
+  </joint>
+  
+  <!--
+  <transmission name="right_trans">
+<type>transmission_interface/SimpleTransmission</type>
+
+<joint name="right_wheel_hinge">
+<hardwareInterface>EffortJointInterface</hardwareInterface>
+</joint>
+
+<actuator name="rightMotor">
+<hardwareInterface>EffortJointInterface</hardwareInterface>
+<mechanicalReduction>10</mechanicalReduction>
+</actuator>
+
+</transmission>
+  
+  <transmission name="left_trans">
+<type>transmission_interface/SimpleTransmission</type>
+
+<joint name="left_wheel_hinge">
+<hardwareInterface>EffortJointInterface</hardwareInterface>
+</joint>
+
+<actuator name="leftMotor">
+<hardwareInterface>EffortJointInterface</hardwareInterface>
+<mechanicalReduction>10</mechanicalReduction>
+</actuator>
+
+</transmission>
+-->
+
+
+<plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+<alwaysOn>true</alwaysOn>
+<updateRate>50</updateRate>
+<leftJoint>left_wheel_hinge</leftJoint>
+<rightJoint>right_wheel_hinge</rightJoint>
+<wheelSeparation>0.25</wheelSeparation>
+<wheelDiameter>0.2</wheelDiameter>
+<torque>20</torque>
+<commandTopic>/robot_model_teleop_0/cmd_vel</commandTopic>
+<odometryTopic>/robot_model_teleop_0/odom_diffdrive</odometryTopic>
+<odometryFrame>odom</odometryFrame>
+<robotBaseFrame>base_footprint</robotBaseFrame>
+</plugin>  
+
+<!--
+<sensor type="camera" name="camera1">
+<update_rate>30.0</update_rate>
+
+<camera name="head">
+	<horizontal_fov>1.3962634</horizontal_fov>
+	
+	<image>
+		<width>800</width>
+		<height>800</height>
+		<format>R8G8B8</format>
+	</image>
+	
+	<clip>
+		<near>0.02</near>
+		<far>300</far>
+	</clip>
+</camera>
+
+<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+  <alwaysOn>true</alwaysOn>
+  <updateRate>0.0</updateRate>
+  <cameraName>/robot_model_teleop_0/camera1</cameraName>
+  <imageTopicName>image_raw</imageTopicName>
+  <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+  <frameName>camera_link</frameName>
+  <hackBaseline>0.07</hackBaseline>
+  <distortionK1>0.0</distortionK1>
+  <distortionK2>0.0</distortionK2>
+  <distortionK3>0.0</distortionK3>
+  <distortionT1>0.0</distortionT1>
+  <distortionT2>0.0</distortionT2>
+</plugin>
+
+</sensor>
+-->
+
+<link name="camera1">
+<pose>0 0 .25 0 0 0</pose>
+
+<collision name='collision'>
+	<!--
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	-->
+	<geometry>
+	  <box>
+	  	 <size>0.1 0.1 0.1</size>
+	  </box>
+	</geometry>
+</collision>
+
+<visual name='visual'>
+	<!--
+	<origin xyz="0 0 ${3*chassisHeight}" rpy="0 0 0"/>
+	-->
+	<geometry>
+	  <!--
+	  <box size="${cameraSize} ${cameraSize} ${cameraSize}"/>
+	  -->
+	  <box>
+	  	<size>0.1 0.1 0.1</size>
+	  </box>
+	</geometry>
+	<!--
+	<material name="blue"/>
+	-->
+</visual>
+
+<!--
+<inertial name='inertial'>
+	<mass value="${cameraMass}" />
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	<box_inertia m="${cameraMass}" x="${cameraSize}" y="${cameraSize}" z="${cameraSize}" />
+</inertial>
+-->
+
+<sensor type="camera" name="camera1">
+	<update_rate>30.0</update_rate>
+
+	<camera name="head">
+		<horizontal_fov>1.57</horizontal_fov>
+	
+		<image>
+			<width>320</width>
+			<height>240</height>
+			<format>R8G8B8</format>
+		</image>
+	
+		<clip>
+			<near>0.02</near>
+			<far>100</far>
+		</clip>
+		
+		<!--
+		<lens>
+			<type>gnomonical</type>
+			<scale_to_hfov>true</scale_to_hfov>
+			<cutoff_angle>1.57</cutoff_angle>
+			<env_texture_size>512</env_texture_size>
+		</lens>
+		<!-->
+	</camera>
+
+	<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+	  <alwaysOn>true</alwaysOn>
+	  <updateRate>0.0</updateRate>
+	  <cameraName>/robot_model_teleop_0/camera1</cameraName>
+	  <imageTopicName>image_raw</imageTopicName>
+	  <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+	  <frameName>camera_link</frameName>
+	  <hackBaseline>0.07</hackBaseline>
+	  <distortionK1>0.0</distortionK1>
+	  <distortionK2>0.0</distortionK2>
+	  <distortionK3>0.0</distortionK3>
+	  <distortionT1>0.0</distortionT1>
+	  <distortionT2>0.0</distortionT2>
+	</plugin>
+
+</sensor>
+</link>
+
+<joint type="revolute" name="camera_fixation1">
+    <pose>0 0 0.3 0 0 0</pose>
+    <child>camera1</child>
+    <parent>chassis</parent>
+    <axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<upper>0</upper>
+				<lower>0</lower>
+			</limit>
+		</axis>
+</joint>
+
+
+
+
+
+
+
+
+
+<link name="camera2">
+<pose>0 0 .25 0 0 1.5707</pose>
+
+<collision name='collision'>
+	<!--
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	-->
+	<geometry>
+	  <box>
+	  	 <size>0.1 0.1 0.1</size>
+	  </box>
+	</geometry>
+</collision>
+
+<visual name='visual'>
+	<!--
+	<origin xyz="0 0 ${3*chassisHeight}" rpy="0 0 0"/>
+	-->
+	<geometry>
+	  <!--
+	  <box size="${cameraSize} ${cameraSize} ${cameraSize}"/>
+	  -->
+	  <box>
+	  	<size>0.1 0.1 0.1</size>
+	  </box>
+	</geometry>
+	<!--
+	<material name="blue"/>
+	-->
+</visual>
+
+<!--
+<inertial name='inertial'>
+	<mass value="${cameraMass}" />
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	<box_inertia m="${cameraMass}" x="${cameraSize}" y="${cameraSize}" z="${cameraSize}" />
+</inertial>
+-->
+
+<sensor type="camera" name="camera2">
+	<update_rate>30.0</update_rate>
+
+	<camera name="head">
+		<horizontal_fov>1.57</horizontal_fov>
+	
+		<image>
+			<width>320</width>
+			<height>240</height>
+			<format>R8G8B8</format>
+		</image>
+	
+		<clip>
+			<near>0.02</near>
+			<far>100</far>
+		</clip>
+		
+		<!--
+		<lens>
+			<type>gnomonical</type>
+			<scale_to_hfov>true</scale_to_hfov>
+			<cutoff_angle>1.57</cutoff_angle>
+			<env_texture_size>512</env_texture_size>
+		</lens>
+		<!-->
+	</camera>
+
+	<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+	  <alwaysOn>true</alwaysOn>
+	  <updateRate>0.0</updateRate>
+	  <cameraName>/robot_model_teleop_0/camera2</cameraName>
+	  <imageTopicName>image_raw</imageTopicName>
+	  <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+	  <frameName>camera_link</frameName>
+	  <hackBaseline>0.07</hackBaseline>
+	  <distortionK1>0.0</distortionK1>
+	  <distortionK2>0.0</distortionK2>
+	  <distortionK3>0.0</distortionK3>
+	  <distortionT1>0.0</distortionT1>
+	  <distortionT2>0.0</distortionT2>
+	</plugin>
+
+</sensor>
+</link>
+
+<joint type="revolute" name="camera_fixation2">
+    <pose>0 0 0.3 0 0 0</pose>
+    <child>camera2</child>
+    <parent>chassis</parent>
+    <axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<upper>0</upper>
+				<lower>0</lower>
+			</limit>
+		</axis>
+</joint>
+
+
+
+
+
+
+
+<link name="camera3">
+<pose>0 0 .25 0 0 3.1415</pose>
+
+<collision name='collision'>
+	<!--
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	-->
+	<geometry>
+	  <box>
+	  	 <size>0.1 0.1 0.1</size>
+	  </box>
+	</geometry>
+</collision>
+
+<visual name='visual'>
+	<!--
+	<origin xyz="0 0 ${3*chassisHeight}" rpy="0 0 0"/>
+	-->
+	<geometry>
+	  <!--
+	  <box size="${cameraSize} ${cameraSize} ${cameraSize}"/>
+	  -->
+	  <box>
+	  	<size>0.1 0.1 0.1</size>
+	  </box>
+	</geometry>
+	<!--
+	<material name="blue"/>
+	-->
+</visual>
+
+<!--
+<inertial name='inertial'>
+	<mass value="${cameraMass}" />
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	<box_inertia m="${cameraMass}" x="${cameraSize}" y="${cameraSize}" z="${cameraSize}" />
+</inertial>
+-->
+
+<sensor type="camera" name="camera3">
+	<update_rate>30.0</update_rate>
+
+	<camera name="head">
+		<horizontal_fov>1.57</horizontal_fov>
+	
+		<image>
+			<width>320</width>
+			<height>240</height>
+			<format>R8G8B8</format>
+		</image>
+	
+		<clip>
+			<near>0.02</near>
+			<far>100</far>
+		</clip>
+		
+		<!--
+		<lens>
+			<type>gnomonical</type>
+			<scale_to_hfov>true</scale_to_hfov>
+			<cutoff_angle>1.57</cutoff_angle>
+			<env_texture_size>512</env_texture_size>
+		</lens>
+		-->
+	</camera>
+
+	<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+	  <alwaysOn>true</alwaysOn>
+	  <updateRate>0.0</updateRate>
+	  <cameraName>/robot_model_teleop_0/camera3</cameraName>
+	  <imageTopicName>image_raw</imageTopicName>
+	  <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+	  <frameName>camera_link</frameName>
+	  <hackBaseline>0.07</hackBaseline>
+	  <distortionK1>0.0</distortionK1>
+	  <distortionK2>0.0</distortionK2>
+	  <distortionK3>0.0</distortionK3>
+	  <distortionT1>0.0</distortionT1>
+	  <distortionT2>0.0</distortionT2>
+	</plugin>
+
+</sensor>
+</link>
+
+<joint type="revolute" name="camera_fixation3">
+    <pose>0 0 0.3 0 0 0</pose>
+    <child>camera3</child>
+    <parent>chassis</parent>
+    <axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<upper>0</upper>
+				<lower>0</lower>
+			</limit>
+		</axis>
+</joint>
+
+
+
+
+<link name="camera4">
+<pose>0 0 .25 0 0 -1.5707</pose>
+
+<collision name='collision'>
+	<!--
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	-->
+	<geometry>
+	  <box>
+	  	 <size>0.1 0.1 0.1</size>
+	  </box>
+	</geometry>
+</collision>
+
+<visual name='visual'>
+	<!--
+	<origin xyz="0 0 ${3*chassisHeight}" rpy="0 0 0"/>
+	-->
+	<geometry>
+	  <!--
+	  <box size="${cameraSize} ${cameraSize} ${cameraSize}"/>
+	  -->
+	  <box>
+	  	<size>0.1 0.1 0.1</size>
+	  </box>
+	</geometry>
+	<!--
+	<material name="blue"/>
+	-->
+</visual>
+
+<!--
+<inertial name='inertial'>
+	<mass value="${cameraMass}" />
+	<origin xyz="0 0 0" rpy="0 0 0"/>
+	<box_inertia m="${cameraMass}" x="${cameraSize}" y="${cameraSize}" z="${cameraSize}" />
+</inertial>
+-->
+
+<sensor type="camera" name="camera4">
+	<update_rate>30.0</update_rate>
+
+	<camera name="head">
+		<horizontal_fov>1.57</horizontal_fov>
+	
+		<image>
+			<width>320</width>
+			<height>240</height>
+			<format>R8G8B8</format>
+		</image>
+	
+		<clip>
+			<near>0.02</near>
+			<far>100</far>
+		</clip>
+		
+		<!--
+		<lens>
+			<type>gnomonical</type>
+			<scale_to_hfov>true</scale_to_hfov>
+			<cutoff_angle>1.57</cutoff_angle>
+			<env_texture_size>512</env_texture_size>
+		</lens>
+		<!-->
+	</camera>
+
+	<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+	  <alwaysOn>true</alwaysOn>
+	  <updateRate>0.0</updateRate>
+	  <cameraName>/robot_model_teleop_0/camera4</cameraName>
+	  <imageTopicName>image_raw</imageTopicName>
+	  <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+	  <frameName>camera_link</frameName>
+	  <hackBaseline>0.07</hackBaseline>
+	  <distortionK1>0.0</distortionK1>
+	  <distortionK2>0.0</distortionK2>
+	  <distortionK3>0.0</distortionK3>
+	  <distortionT1>0.0</distortionT1>
+	  <distortionT2>0.0</distortionT2>
+	</plugin>
+
+</sensor>
+</link>
+
+<joint type="revolute" name="camera_fixation4">
+    <pose>0 0 0.3 0 0 0</pose>
+    <child>camera4</child>
+    <parent>chassis</parent>
+    <axis>
+			<xyz>0 0 1</xyz>
+			<limit>
+				<upper>0</upper>
+				<lower>0</lower>
+			</limit>
+		</axis>
+</joint>
+
+
+	</xacro:macro>
+	
+	<xacro:macroed_robot />
+
+
+</robot>
+

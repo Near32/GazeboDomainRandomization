@@ -1,0 +1,19 @@
+<launch>
+  <arg name="name" default="MODEL0"/>
+	<arg name="X" default="2.0"/>
+	<arg name="Y" default="0.0"/>
+	<arg name="Z" default="0.3"/>
+	
+  <!-- Spawn a model into Gazebo -->
+	<!--
+  <arg name="model_file" default="$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/model.urdf" />
+  <node name="spawn_model_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-file $(arg model_file) -urdf -z $(arg Z) -x $(arg X) -y $(arg Y) -model $(arg name)" />
+	-->
+	
+	<!-- Convert an xacro and put on parameter server -->
+	<param name="robot_description" command="$(find xacro)/xacro.py '$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/model.urdf.xacro' name:='$(arg name)' color:='$(arg color)'" />
+  
+  <!-- Spawn a model into Gazebo -->
+	<node name="spawn_model_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -z $(arg Z) -x $(arg X) -y $(arg Y) -model $(arg name)" />
+	
+</launch>

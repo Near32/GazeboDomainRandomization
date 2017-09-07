@@ -1,0 +1,15 @@
+<launch>
+  <arg name="name" default="RECT0"/>
+	<arg name="color" default="Orange"/>
+	<arg name="scale" default="1.0"/>
+	<arg name="X" default="2.0"/>
+	<arg name="Y" default="0.0"/>
+	<arg name="Z" default="0.3"/>
+
+	<!-- Convert an xacro and put on parameter server -->
+	<param name="robot_description" command="$(find xacro)/xacro.py '$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/rectangle.urdf.xacro' name:='$(arg name)' color:='$(arg color)' scale:='$(arg scale)'" />
+  
+  <!-- Spawn a model into Gazebo -->
+	<node name="spawn_rectangle_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -z $(arg Z) -x $(arg X) -y $(arg Y) -model $(arg name)" />
+	
+</launch>

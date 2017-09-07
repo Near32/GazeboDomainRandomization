@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<robot name="macroed_sphere" xmlns:xacro="http://ros.org/wiki/xacro">
+	
+	<xacro:macro name="simple_sphere" params="name color scale">
+		<link name="sphere_${name}">
+
+		  <inertial>
+		    <origin xyz="0.0 0.0 0.0" />
+		    <mass value="10.0" />
+		    <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="100.0"  iyz="0.0"  izz="1.0" />
+		  </inertial>
+
+		  <visual>
+		    <origin xyz="0 0 ${scale*0.5}"/>
+		    <geometry>
+		      <sphere radius="${scale*0.5}" />
+		    </geometry>
+		    
+		  </visual>
+
+		  <collision>
+		    <origin xyz="0 0 ${scale*0.5}"/>
+		    <geometry>
+		      <sphere radius="${scale*0.5}" />
+		    </geometry>
+		  </collision>
+		</link>
+
+		<gazebo reference="sphere_${name}">
+		  <material>Gazebo/${color}</material>
+		</gazebo>
+
+	</xacro:macro>
+	
+	
+	<xacro:simple_sphere name="$(arg name)" color="$(arg color)" scale="$(arg scale)"/>
+	
+</robot>
+
+
+
+

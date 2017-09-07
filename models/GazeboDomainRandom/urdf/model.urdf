@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<robot name="model">
+  <pose>0 0 0  0 0 0</pose>
+  <static>true</static>
+  <link name="body">
+    <visual name="visual">
+      <pose>0.0 0.0 0.3 0 0 0</pose>
+      <geometry>
+        <mesh>
+        	<uri>model://GazeboDomainRandom/models/robot/mesh.dae</uri>
+        	<scale>0.01 0.01 0.01</scale>
+        </mesh>
+      </geometry>
+    </visual>
+  </link>
+</robot>

@@ -28,27 +28,38 @@ class ShapeFactory :
 	In : ShapeParamsranges
 	Out : ShapeParams
 	'''
-	def __init__(self, paramsranges) :
-		assert(paramsranges, isinstance(paramsranges,ShapeParamsRanges))
+	def __init__(self, params) :
+		assert(isinstance(params,ShapeParamsRanges))
 		
-		self.paramsranges = paramsranges
+		self.params = params
 		
 	def generate(self) :
 		'''
 		Generate a new shape with respect to the ShapeParamsRanges information provided.
 		Return ShapeParams.
 		'''
-		newshape_info = ShapeParams()
-		#TODO : generate params for the new shape
+		newshape_info = ShapeParams(shape_type=self.params.shape_type)
 		
-		return shape_info 
+		#choose scale :
+		scale = np.random.random_sample()*(self.params.shape_scale_max-0.25)+0.25
+		newshape_info.shape_scale = scale
+		
+		#choose pose :
+		interval = self.params.shape_pose_max-self.params.shape_pose_min
+		newshape_info.shape_pose = interval*np.random.random_sample((1,6))+self.params.shape_pose_min
+		
+		#choose color :
+		nbrcolors = len( self.params.shape_color_list )
+		newshape_info.shape_color = self.params.shape_color_list[ np.random.randint( nbrcolors) ]
+		
+		return newshape_info
 		
 class Configuration :
 	def __init__(self, shape_list=[]) :
 		self.shape_list = shape_list
 		
 	def append(self, newshape_info) :
-		assert(newshape_info,isinstance(newshape_info,ShapeParams))
+		assert(isinstance(newshape_info,ShapeParams))
 		
 		self.shape_list.append( newshape_info)
 		
@@ -93,6 +104,9 @@ class ConfigurationFactory :
 		self.launcher_gazebo.kill()
 		self.launcher_roscore.kill()
 		
+		command = 'pkill roslaunch'
+		subprocess.Popen( command.split())
+		
 		rospy.loginfo("GAZEBO Domain Random : ENVIRONMENT "+str(self.port)+" : CLOSED.")
 		
 						
@@ -102,24 +116,33 @@ class ConfigurationFactory :
 		'''
 		self.init_roscore()
 		self.init_gazebo()
-		self.init_node()
-		
+		self.init_node()	
 		
 		
 		
 	def generate(self) :
 		newconfig = Configuration()
-		#TODO : generate params for the new config
 		
+		for (shapefactory,occ) in self.info :
+			nbrocc = np.random.randint( low=occ.occ_min, high=occ.occ_max)
+			
+			for i in range(nbrocc) :
+				newconfig.append( shapefactory.generate() )
+			
 		return newconfig
+	
+	
 		
 	def spawn(self, config) :
-		assert(config,isinstance(config,Configuration))
+		assert(isinstance(config,Configuration))
+		
+		shape_it = dict()
 		
 		for elem in config.shape_list :
 			eltype = elem.shape_type
 			elscale = elem.shape_scale
-			elpose = elem.shape_pose
+			elpose = elem.shape_pose.tolist()[0]
+			
 			elposeX = elpose[0]
 			elposeY = elpose[1]
 			elposeZ = elpose[2]
@@ -128,7 +151,18 @@ class ConfigurationFactory :
 			elposeYaw = elpose[5]
 			elcolor = elem.shape_color
 			
-			#TODO : subprocess roslaunch spawner ...
+			rospy.loginfo(elcolor)
+			
+			if eltype in shape_it :
+				shape_it[eltype] += 1
+			else :
+				shape_it[eltype] = 0
+				
+			elname = eltype+str(shape_it[eltype])
+			
+			command = 'roslaunch -p '+str(self.port)+' GazeboDomainRandom {}.spawn.launch name:={} color:={} scale:={} X:={} Y:={} Z:={}'.format( eltype, elname, elcolor, elscale, elposeX, elposeY, elposeZ)
+			subprocess.Popen( command, shell=True, env=self.env)
+			time.sleep(1.0)
 			
 		
 			
