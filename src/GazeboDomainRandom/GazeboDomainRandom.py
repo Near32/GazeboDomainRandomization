@@ -203,7 +203,7 @@ class Camera :
 		
 		
 	def _erase(self) :
-		command = "rosservice call gazebo/delete_model \"{model_name: camera}\""
+		command = "rosservice call gazebo/delete_model \"{model_name: CAMERA}\""
 		subprocess.Popen(command, shell=True, env=self.env)		
 		
 		
