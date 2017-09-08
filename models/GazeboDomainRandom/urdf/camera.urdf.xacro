@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+
+<robot name="macroed_camera" xmlns:xacro="http://ros.org/wiki/xacro">
+	
+	<xacro:macro name="simple_camera" params="fovy altitude">
+		<link name="camera_link">
+			<!--
+			<pose>0 0 ${altitude} 0 0 0</pose>
+			-->
+			<inertial>
+		    <origin xyz="0 0 0" />
+		    <mass value="10.0" />
+		    <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="100.0"  iyz="0.0"  izz="1.0" />
+		  </inertial>
+		  
+		  <collision name='collision'>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<geometry>
+					<box size="0.2 0.2 ${altitude}" />
+				</geometry>
+			</collision>
+
+			<visual name='visual'>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<geometry>
+					<box size="0.2 0.2 ${altitude}" />
+				</geometry>
+			</visual>
+		</link>
+		
+		<gazebo reference="camera_link">
+			<sensor type="camera" name="camera1">
+				<update_rate>60.0</update_rate>
+				<camera name="head">
+					<horizontal_fov>${fovy*3.1415/180.0}</horizontal_fov>
+	
+					<image>
+						<width>320</width>
+						<height>240</height>
+						<format>R8G8B8</format>
+					</image>
+	
+					<clip>
+						<near>0.02</near>
+						<far>300</far>
+					</clip>
+		
+					<!--
+					<lens>
+						<type>gnomonical</type>
+						<scale_to_hfov>true</scale_to_hfov>
+						<cutoff_angle>1.57</cutoff_angle>
+						<env_texture_size>512</env_texture_size>
+					</lens>
+					<!-->
+					<noise>
+		        <type>gaussian</type>
+		        <!-- Noise is sampled independently per pixel on each frame.
+		             That pixel's noise value is added to each of its color
+		             channels, which at that point lie in the range [0,1]. -->
+		        <mean>0.0</mean>
+		        <stddev>0.001</stddev>
+		      </noise>
+				</camera>
+
+				<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+					<alwaysOn>true</alwaysOn>
+					<updateRate>60.0</updateRate>
+					<cameraName>CAMERA</cameraName>
+					<imageTopicName>image_raw</imageTopicName>
+					<cameraInfoTopicName>camera_info</cameraInfoTopicName>
+					<frameName>camera_link</frameName>
+					<hackBaseline>0.07</hackBaseline>
+					<distortionK1>0.0</distortionK1>
+					<distortionK2>0.0</distortionK2>
+					<distortionK3>0.0</distortionK3>
+					<distortionT1>0.0</distortionT1>
+					<distortionT2>0.0</distortionT2>
+				</plugin>
+			</sensor>
+			
+		</gazebo>
+		
+		
+		<gazebo reference="camera_link">
+		  <material>Gazebo/Black</material>
+		</gazebo>
+		
+	</xacro:macro>
+		
+	<xacro:simple_camera fovy="$(arg fovy)" altitude="$(arg altitude)"/>
+	
+</robot>
+

@@ -165,5 +165,45 @@ class ConfigurationFactory :
 			time.sleep(1.0)
 			
 		
+
+
+class Camera :
+	def __init__(self, fovy=75, altitude=1.0, port=11311, env=None) :
+		self.fovy = fovy
+		self.altitude = altitude
+		self.spawned = False
+		self.port = port
+		self.env = env
+		if self.env is None :
+			self.env = os.environ
 			
+	def setFovy(self, fovy) :
+		self.fovy = fovy
+		self.spawn()
+		
+	def setAltitude(self, altitude) :
+		self.altitude = altitude
+		self.spawn()
+		
+	def spawn(self,port=None,env=None) :
+		if port is not None :
+			self.port = port
+		if env is not None :
+			self.env = env
+			
+		
+		if self.spawned :
+			self._erase()
+			
+		command = 'roslaunch -p '+str(self.port)+' GazeboDomainRandom camera.spawn.launch fovy:={} Z:={}'.format( self.fovy, self.altitude)
+		subprocess.Popen( command, shell=True, env=self.env)
+		time.sleep(1.0)
+		
+		self.spawned = True
+		
+		
+	def _erase(self) :
+		command = "rosservice call gazebo/delete_model \"{model_name: camera}\""
+		subprocess.Popen(command, shell=True, env=self.env)		
+		
 		
