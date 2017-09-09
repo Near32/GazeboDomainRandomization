@@ -3,14 +3,12 @@
 <robot name="macroed_camera" xmlns:xacro="http://ros.org/wiki/xacro">
 	
 	<xacro:macro name="simple_camera" params="fovy altitude">
-		<link name="camera_link">
-			<!--
-			<pose>0 0 ${altitude} 0 0 0</pose>
-			-->
+		<link name="below_link">
+			<pose>0 0 ${altitude/2.0} 0 0 0</pose>
 			<inertial>
 		    <origin xyz="0 0 0" />
-		    <mass value="10.0" />
-		    <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="100.0"  iyz="0.0"  izz="1.0" />
+		    <mass value="100.0" />
+		    <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="1.0"  iyz="0.0"  izz="1.0" />
 		  </inertial>
 		  
 		  <collision name='collision'>
@@ -28,6 +26,35 @@
 			</visual>
 		</link>
 		
+		<link name="camera_link">
+			<pose>0 0 ${altitude+0.25} 0 0 0</pose>
+			<inertial>
+		    <origin xyz="0 0 0" />
+		    <mass value="1.0" />
+		    <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="1.0"  iyz="0.0"  izz="1.0" />
+		  </inertial>
+		  
+		  <collision name='collision'>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<geometry>
+					<box size="0.2 02 0.5" />
+				</geometry>
+			</collision>
+
+			<visual name='visual'>
+				<origin xyz="0 0 0" rpy="0 0 0"/>
+				<geometry>
+					<box size="0.2 0.2 0.5" />
+				</geometry>
+			</visual>
+		</link>
+		
+		<joint type="fixed" name="camera_fixation">
+		  <origin xyz="0 0 ${altitude/2.0+0.25}" rpy="0 0 0"/>
+		  <child link="camera_link"/>
+		  <parent link="below_link"/>
+		</joint>
+		
 		<gazebo reference="camera_link">
 			<sensor type="camera" name="camera1">
 				<update_rate>60.0</update_rate>
@@ -35,8 +62,8 @@
 					<horizontal_fov>${fovy*3.1415/180.0}</horizontal_fov>
 	
 					<image>
-						<width>320</width>
-						<height>240</height>
+						<width>640</width>
+						<height>480</height>
 						<format>R8G8B8</format>
 					</image>
 	
@@ -53,14 +80,17 @@
 						<env_texture_size>512</env_texture_size>
 					</lens>
 					<!-->
+					<!-- Noise is sampled independently per pixel on each frame.
+	             That pixel's noise value is added to each of its color
+	             channels, which at that point lie in the range [0,1]. -->
+					<!--
 					<noise>
 		        <type>gaussian</type>
-		        <!-- Noise is sampled independently per pixel on each frame.
-		             That pixel's noise value is added to each of its color
-		             channels, which at that point lie in the range [0,1]. -->
+		        
 		        <mean>0.0</mean>
 		        <stddev>0.001</stddev>
 		      </noise>
+		      -->
 				</camera>
 
 				<plugin name="camera_controller" filename="libgazebo_ros_camera.so">

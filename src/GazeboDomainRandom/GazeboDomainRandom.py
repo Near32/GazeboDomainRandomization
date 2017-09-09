@@ -221,8 +221,10 @@ class Camera :
 			self.P = np.matrix( np.reshape( self.camerainfo.P, (3,4)) )
 	
 	def getImage(self) :
-		return self.image
-		
+		if self.image is not None :
+			return self.image.copy()
+		else :
+			return None
 				
 	def setFovy(self, fovy) :
 		self.fovy = fovy
@@ -253,19 +255,22 @@ class Camera :
 	def _erase(self) :
 		command = "rosservice call gazebo/delete_model \"{model_name: CAMERA}\""
 		subprocess.Popen(command, shell=True, env=self.env)		
-		
+		time.sleep(1.0)
 	
 	def project(self, x) :
 		#homogenization :
 		if x.shape[0] == 3 :
 			x = np.concatenate( [x, np.ones((1,1)) ], axis=0 )
 		x = np.matrix(x)
-		#P = self.P
-		P = np.matrix( np.concatenate( [self.K, np.zeros((3,1)) ], axis=1) )
 		
-		#P[2,3] = self.altitude
-		#print(P)
+		#P = self.K * np.matrix( np.concatenate( [ np.ones((3,3)), np.reshape( [ -self.altitude, 0.0, 0.0 ], newshape=(3,1) )], axis=1) )
+		Rt = np.matrix( [ [1, 0, 0, 0], [0, 1, 0, self.altitude+0.1], [0, 0, 1, 0] ] )
+		P = self.K * Rt
 		
+		'''
+		Rt = np.matrix( [ [1, 0, 0, 0], [0, 1, 0, self.altitude+0.1], [0, 0, 1, 0], [0, 0, 0, 1.0] ] )
+		P = self.P * Rt
+		'''
 		projx = P * x
 		#dehomogenization ;
 		for i in range(3) :
