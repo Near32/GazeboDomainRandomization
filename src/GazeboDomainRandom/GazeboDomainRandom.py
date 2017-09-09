@@ -164,8 +164,6 @@ class ConfigurationFactory :
 			elposeYaw = elpose[5]
 			elcolor = elem.shape_color
 			
-			rospy.loginfo(elcolor)
-			
 			if eltype in shape_it :
 				shape_it[eltype] += 1
 			else :
@@ -174,9 +172,11 @@ class ConfigurationFactory :
 			elname = eltype+str(shape_it[eltype])
 			
 			command = 'roslaunch -p '+str(self.port)+' GazeboDomainRandom {}.spawn.launch name:={} color:={} scale:={} X:={} Y:={} Z:={}'.format( eltype, elname, elcolor, elscale, elposeX, elposeY, elposeZ)
+			rospy.loginfo('CONFIGURATION SPAWN : COMMAND : {}'.format(command) )
 			subprocess.Popen( command, shell=True, env=self.env)
 			time.sleep(1.0)
-		
+	
+		time.sleep(2.0)	
 		
 	def getCurrentConfiguration(self):
 		return self.currentConfiguration	
@@ -260,7 +260,12 @@ class Camera :
 		if x.shape[0] == 3 :
 			x = np.concatenate( [x, np.ones((1,1)) ], axis=0 )
 		x = np.matrix(x)
-		projx = self.P * x
+		P = self.P
+		P[2,3] = self.altitude
+		
+		print(P)
+		
+		projx = P * x
 		#dehomogenization ;
 		for i in range(3) :
 			projx[i] /= projx[2]+1e-6
