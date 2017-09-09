@@ -3,7 +3,9 @@ import subprocess
 import time
 import os
 import numpy as np
-
+from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 
 
 class ShapeParams :
@@ -12,7 +14,13 @@ class ShapeParams :
 		self.shape_scale = shape_scale
 		self.shape_pose = shape_pose
 		self.shape_color = shape_color
+	
+	def getPose(self) :
+		return self.shape_pose
 		
+	def getType(self) :
+		return self.shape_type
+					
 class ShapeParamsRanges :
 	def __init__(self, shape_type, shape_scale_max=1.0, shape_pose_min=None, shape_pose_max=None, shape_color_list=['White']) :
 		self.shape_type = shape_type
@@ -21,7 +29,7 @@ class ShapeParamsRanges :
 		self.shape_pose_max = shape_pose_max
 		self.shape_color_list = shape_color_list
 
-		
+			
 class ShapeFactory :
 	'''
 	Factory of shapes...
@@ -62,7 +70,9 @@ class Configuration :
 		assert(isinstance(newshape_info,ShapeParams))
 		
 		self.shape_list.append( newshape_info)
-		
+	
+	def getShapeList(self) :
+		return self.shape_list	
 
 class OccParamsRanges :
 	def __init__(self, occ_min=0, occ_max=2 ) :
@@ -84,6 +94,7 @@ class ConfigurationFactory :
 		self.env["ROS_MASTER_URI"] = 'http://localhost:'+str(self.port)
 		self.env["GAZEBO_MASTER_URI"]='http://localhost:'+str(self.port+40)
 	
+		self.currentConfiguration = None
 	
 	def init_roscore(self):
 		self.launcher_roscore = subprocess.Popen(['roscore -p '+str(self.port)+' '],shell=True,env=self.env)
@@ -128,6 +139,8 @@ class ConfigurationFactory :
 			
 			for i in range(nbrocc) :
 				newconfig.append( shapefactory.generate() )
+		
+		self.currentConfiguration = newconfig
 			
 		return newconfig
 	
@@ -163,7 +176,10 @@ class ConfigurationFactory :
 			command = 'roslaunch -p '+str(self.port)+' GazeboDomainRandom {}.spawn.launch name:={} color:={} scale:={} X:={} Y:={} Z:={}'.format( eltype, elname, elcolor, elscale, elposeX, elposeY, elposeZ)
 			subprocess.Popen( command, shell=True, env=self.env)
 			time.sleep(1.0)
-			
+		
+		
+	def getCurrentConfiguration(self):
+		return self.currentConfiguration	
 		
 
 
@@ -176,7 +192,38 @@ class Camera :
 		self.env = env
 		if self.env is None :
 			self.env = os.environ
+		
+		self.K = np.zeros((3,3))
+		self.K[0][0] = self.fovy
+		self.K[1][1] = self.fovy
+		self.K[2][2] = 1.0
+		self.K = np.matrix(self.K)
+		self.P = np.matrix( np.concatenate( [self.K, np.zeros((3,1)) ], axis=1) )
+		
+		self.camerainfo = None
+		self.listener_camera_info = rospy.Subscriber( '/CAMERA/camera_info', CameraInfo, self.callbackCAMERAINFO )
+		self.image = None
+		self.bridge = CvBridge()
+		self.listener_image = rospy.Subscriber( '/CAMERA/image_raw', Image, self.callbackIMAGE )
+		
+		
+	def ros2np(self,img) :
+		return self.bridge.imgmsg_to_cv2(img, "bgr8")
+
+	
+	def callbackIMAGE(self, image) :
+		self.image = self.ros2np(image)
 			
+	def callbackCAMERAINFO(self, camerainfo) :
+		self.camerainfo = camerainfo
+		if self.camerainfo is not None :
+			self.K = np.matrix( np.reshape( self.camerainfo.K, (3,3)) )
+			self.P = np.matrix( np.reshape( self.camerainfo.P, (3,4)) )
+	
+	def getImage(self) :
+		return self.image
+		
+				
 	def setFovy(self, fovy) :
 		self.fovy = fovy
 		self.spawn()
@@ -200,10 +247,23 @@ class Camera :
 		time.sleep(1.0)
 		
 		self.spawned = True
+		rospy.loginfo('CAMERA SPAWNED : fovy={} // Z={}'.format(self.fovy, self.altitude) )
 		
 		
 	def _erase(self) :
 		command = "rosservice call gazebo/delete_model \"{model_name: CAMERA}\""
 		subprocess.Popen(command, shell=True, env=self.env)		
 		
+	
+	def project(self, x) :
+		#homogenization :
+		if x.shape[0] == 3 :
+			x = np.concatenate( [x, np.ones((1,1)) ], axis=0 )
+		x = np.matrix(x)
+		projx = self.P * x
+		#dehomogenization ;
+		for i in range(3) :
+			projx[i] /= projx[2]+1e-6
 		
+		return projx
+			
