@@ -260,10 +260,11 @@ class Camera :
 		if x.shape[0] == 3 :
 			x = np.concatenate( [x, np.ones((1,1)) ], axis=0 )
 		x = np.matrix(x)
-		P = self.P
-		P[2,3] = self.altitude
+		#P = self.P
+		P = np.matrix( np.concatenate( [self.K, np.zeros((3,1)) ], axis=1) )
 		
-		print(P)
+		#P[2,3] = self.altitude
+		#print(P)
 		
 		projx = P * x
 		#dehomogenization ;
