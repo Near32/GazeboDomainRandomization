@@ -6,6 +6,7 @@ import numpy as np
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+import copy
 
 
 class ShapeParams :
@@ -87,6 +88,7 @@ class ConfigurationFactory :
 	Out : Configuration
 	'''
 	def __init__(self, info=[], port=11311 ) :
+		self.spawned = False
 		self.info = info
 		self.port = port
 		
@@ -139,16 +141,32 @@ class ConfigurationFactory :
 			
 			for i in range(nbrocc) :
 				newconfig.append( shapefactory.generate() )
-		
-		self.currentConfiguration = newconfig
 			
 		return newconfig
 	
-	
-		
+	def _erase(self) :
+		counters = dict()
+		for el in self.currentConfiguration.shape_list :
+			stype = el.getType()
+			
+			if stype in counters :
+				counters[stype] += 1
+			else :
+				counters[stype] = 0
+
+			rospy.loginfo('ERASE : {}'.format(stype) )
+			command = "rosservice call gazebo/delete_model \"{model_name: "+stype+str(counters[stype])+"}\""
+			rospy.loginfo('COMMAND : ERASE : {}'.format(command) )
+			subprocess.Popen(command, shell=True, env=self.env)		
+			
 	def spawn(self, config) :
 		assert(isinstance(config,Configuration))
 		
+		if self.spawned :
+			self._erase()
+
+		self.currentConfiguration = copy.deepcopy(config)
+
 		shape_it = dict()
 		
 		for elem in config.shape_list :
@@ -176,6 +194,7 @@ class ConfigurationFactory :
 			subprocess.Popen( command, shell=True, env=self.env)
 			time.sleep(1.0)
 	
+		self.spawned = True
 		time.sleep(2.0)	
 		
 	def getCurrentConfiguration(self):

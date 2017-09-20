@@ -16,17 +16,17 @@
 		  </inertial>
 
 		  <visual>
-		    <origin xyz="0 0 ${scale*0.25}"/>
+		    <origin xyz="0 0 ${scale*0.125}"/>
 		    <geometry>
-		      <box size="${scale*0.5} ${scale*1} ${scale*0.5}" />
+		      <box size="${scale*0.25} ${scale*0.5} ${scale*0.25}" />
 		    </geometry>
 		    
 		  </visual>
 
 		  <collision>
-		    <origin xyz="0 0 ${scale*0.25}"/>
+		    <origin xyz="0 0 ${scale*0.125}"/>
 		    <geometry>
-		      <box size="${scale*0.5} ${scale*1} ${scale*0.5}" />
+		      <box size="${scale*0.25} ${scale*0.5} ${scale*0.25}" />
 		    </geometry>
 		  </collision>
 		</link>

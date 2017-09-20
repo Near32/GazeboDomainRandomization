@@ -19,8 +19,8 @@ def makeboundingbox(x,size=0.2) :
 	y2[0,0] += 3*size
 	y1[1,0] -= 3*size
 	y2[1,0] += size
-	#y1[2,0] += 3*size
-	#y2[2,0] += 3*size
+	y1[2,0] += 2*size
+	y2[2,0] += 2*size
 	return y1,y2
 	
 	
@@ -36,24 +36,29 @@ def test_camera() :
 	shape_types = [cylindershape, boxshape,sphereshape, rectangleshape]
 	
 	pose_min = np.concatenate( [2.0*np.ones((1,3)), np.zeros((1,3))], axis=1)	
-	pose_min[0][0] = 2.0
-	pose_min[0][1] = -2.0
+	pose_min[0][0] = 1.0
+	pose_min[0][1] = -3.0
 	pose_min[0][2] = 0.0
 	pose_max = np.concatenate( [2.5*np.ones((1,3)), np.zeros((1,3))], axis=1)
-	pose_max[0][0] = 5.0
-	pose_max[0][1] = 2.0
+	pose_max[0][0] = 10.0
+	pose_max[0][1] = 3.0
 	pose_max[0][2] = 0.0
 	
 	listin = list()
-	'''
+	
 	for el in shape_types :
 		shpr = ShapeParamsRanges(shape_type=el, shape_pose_min=pose_min, shape_pose_max=pose_max, shape_color_list=colors)
 		shF = ShapeFactory(params=shpr)
 		occ = OccParamsRanges(occ_min=1,occ_max=3)
 		listin.append( (shF, occ) )
-	'''
 	
 	#Add the model :
+	pose_min[0][0] = 2.0
+	pose_min[0][1] = -2.0
+	pose_min[0][2] = 0.0
+	pose_max[0][0] = 5.0
+	pose_max[0][1] = 2.0
+	pose_max[0][2] = 0.0
 	shpr = ShapeParamsRanges(shape_type='model', shape_pose_min=pose_min, shape_pose_max=pose_max, shape_color_list=colors)
 	shF = ShapeFactory(params=shpr)
 	occ = OccParamsRanges(occ_min=1,occ_max=2)
@@ -70,8 +75,8 @@ def test_camera() :
 	
 	
 	#handle the camera :
-	fovy = 120
-	altitude = 1.2
+	fovy = 90
+	altitude = 0.6
 	camera = Camera(fovy=fovy,altitude=altitude,port=cfact.port, env=cfact.env)
 	camera.spawn()
 	
@@ -137,7 +142,7 @@ def test_camera() :
 
 def draw(image,camera,x) :
 	test = None
-	for i in range(10) :
+	for i in range(1) :
 		xp = x.copy()
 		xp[2,0] += i*0.1 
 		pose3d1, pose3d2 = makeboundingbox(xp)

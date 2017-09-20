@@ -12,17 +12,17 @@
 		  </inertial>
 
 		  <visual>
-		    <origin xyz="0 0 ${scale*0.5}"/>
+		    <origin xyz="0 0 ${scale*0.25}"/>
 		    <geometry>
-		      <sphere radius="${scale*0.5}" />
+		      <sphere radius="${scale*0.25}" />
 		    </geometry>
 		    
 		  </visual>
 
 		  <collision>
-		    <origin xyz="0 0 ${scale*0.5}"/>
+		    <origin xyz="0 0 ${scale*0.25}"/>
 		    <geometry>
-		      <sphere radius="${scale*0.5}" />
+		      <sphere radius="${scale*0.25}" />
 		    </geometry>
 		  </collision>
 		</link>

@@ -1,5 +1,5 @@
 <launch>
-  <arg name="world_file"  			default="$(find GazeboDomainRandom)/models/GazeboDomainRandom/worlds/empty.world"/>
+  <arg name="world_file"  			default="$(find GazeboDomainRandom)/models/GazeboDomainRandom/worlds/empty+light.world"/>
 	<arg name="gui" 							default="true"/>
 	
 

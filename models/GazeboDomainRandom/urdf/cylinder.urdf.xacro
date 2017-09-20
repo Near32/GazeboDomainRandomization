@@ -16,17 +16,17 @@
 		  </inertial>
 
 		  <visual>
-		    <origin xyz="0 0 ${scale*0.25}"/>
+		    <origin xyz="0 0 ${scale*0.125}"/>
 		    <geometry>
-		      <cylinder radius="${scale*0.5}" length="${scale*0.5}" />
+		      <cylinder radius="${scale*0.25}" length="${scale*0.25}" />
 		    </geometry>
 		    
 		  </visual>
 
 		  <collision>
-		    <origin xyz="0 0 ${scale*0.25}"/>
+		    <origin xyz="0 0 ${scale*0.125}"/>
 		    <geometry>
-		      <cylinder radius="${scale*0.5}" length="${scale*0.5}" />
+		      <cylinder radius="${scale*0.25}" length="${scale*0.25}" />
 		    </geometry>
 		  </collision>
 		</link>
