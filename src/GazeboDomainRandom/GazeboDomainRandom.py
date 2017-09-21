@@ -100,7 +100,7 @@ class ConfigurationFactory :
 	
 	def init_roscore(self):
 		self.launcher_roscore = subprocess.Popen(['roscore -p '+str(self.port)+' '],shell=True,env=self.env)
-		time.sleep(2)
+		time.sleep(1)
 	
 	def init_gazebo(self) :
 		command = ('roslaunch -p '+str(self.port)+' GazeboDomainRandom empty_world.launch')
@@ -134,7 +134,7 @@ class ConfigurationFactory :
 		
 		
 	def generate(self) :
-		newconfig = Configuration()
+		newconfig = Configuration(shape_list=[])
 		
 		for (shapefactory,occ) in self.info :
 			nbrocc = np.random.randint( low=occ.occ_min, high=occ.occ_max)
@@ -154,7 +154,7 @@ class ConfigurationFactory :
 			else :
 				counters[stype] = 0
 
-			rospy.loginfo('ERASE : {}'.format(stype) )
+			#rospy.loginfo('ERASE : {}'.format(stype) )
 			command = "rosservice call gazebo/delete_model \"{model_name: "+stype+str(counters[stype])+"}\""
 			rospy.loginfo('COMMAND : ERASE : {}'.format(command) )
 			subprocess.Popen(command, shell=True, env=self.env)		

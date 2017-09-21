@@ -13,14 +13,14 @@
       </attenuation>
       <direction>-0.5 0.1 -0.9</direction>
     </light>
-    <light name='spot1' type='point'>
+    <light name='point1' type='point'>
       <cast_shadows>1</cast_shadows>
       <pose>0 0 1 0 -0 0</pose>
       <diffuse>0.8 0.8 0.8 1</diffuse>
       <specular>0.2 0.2 0.2 1</specular>
       <attenuation>
         <range>1000</range>
-        <constant>0.9</constant>
+        <constant>0.75</constant>
         <linear>0.01</linear>
         <quadratic>0.001</quadratic>
       </attenuation>

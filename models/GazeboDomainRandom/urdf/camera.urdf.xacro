@@ -62,7 +62,7 @@
 					<horizontal_fov>${fovy*3.1415/180.0}</horizontal_fov>
 	
 					<image>
-						<width>640</width>
+						<width>1280</width>
 						<height>480</height>
 						<format>R8G8B8</format>
 					</image>
