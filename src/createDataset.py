@@ -1,7 +1,8 @@
 from XMLGenerator import XMLGenerator, XMLObjectTags
 from GazeboDomainRandom import *
-from utils import reframing, makeboundingbox
+from utils import reframing, makeboundingbox, draw
 import cv2
+import os 
 
 def create_dataset(path='./dataset/') :
 	np.random.seed()
@@ -9,7 +10,11 @@ def create_dataset(path='./dataset/') :
 	genXML = XMLGenerator(path_out=path)
 	#index to name the pictures :
 	date = '2017_09_22__'
-	index = 0
+	indexIMG = 0
+	#create the images folder :
+	pathimg = 'images/'
+	if not os.path.exists(path+pathimg) :
+		os.makedirs(path+pathimg)
 
 	#list of colors :
 	colors = ['White', 'Blue', 'Orange', 'Pink', 'Green', 'Purple', 'Yellow', 'Red', 'Black', 'Grey']
@@ -62,8 +67,8 @@ def create_dataset(path='./dataset/') :
 	
 	
 	#handle the camera :
-	fovy = 160
-	altitude = 0.5
+	fovy = 120
+	altitude = 0.45
 	camera = Camera(fovy=fovy,altitude=altitude,port=cfact.port, env=cfact.env)
 	camera.spawn()
 	
@@ -90,6 +95,7 @@ def create_dataset(path='./dataset/') :
 	fovy_min = 45
 	fovy_step = 30
 	fovy_max = 185
+	original_image = None
 	
 	continuer = True
 	while continuer :
@@ -101,9 +107,9 @@ def create_dataset(path='./dataset/') :
 		#print('MODEL 2D POSE : {}'.format(pose2d ) )
 		
 		image = camera.getImage()
-		original_image = image.copy()
 
 		if image is not None :
+			original_image = image.copy()
 			draw(image,camera,pose3d)
 		else :
 			image = np.zeros( (480,640) )
@@ -144,12 +150,18 @@ def create_dataset(path='./dataset/') :
 			pose3d = reframing(pose3d)
 		elif key == ord('p') :
 			listobj = []
-			for i in range(len(pose2d)) :
-				listobj.append( XMLObjectTags() )
-			filename = date+str(index)
+			for i in range(len(pose3d)) :
+				xp = pose3d[i].copy()
+				pose3d1, pose3d2 = makeboundingbox(xp)
+				p1 = camera.project(pose3d1)
+				p2 = camera.project(pose3d2)
+				pose = [ int(p1[0]), int(p1[1]), int(p2[0]), int(p2[1]) ]
+				print(pose)
+				listobj.append( XMLObjectTags(name='model',pose=pose) )
+			filename = date+str(indexIMG)
 			genXML.generate(object_tags=listobj, filename=filename)
-			index+=1
-			cv2.imwrite(original_image, path+filename)
+			indexIMG+=1
+			cv2.imwrite( path+pathimg+filename+'.png',original_image)
 
 
 

@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import copy
+import os
 
 class XMLObjectTags :
 	def __init__(self,name='name',pose=[0,0,0,0]):
@@ -31,7 +32,9 @@ class XMLObjectTags :
 class XMLGenerator :
 	def __init__(self,path_out='./') :
 		self.et_base = ET.parse('base_annotation.xml')
-		self.path_out = path_out
+		self.path_out = path_out+'annotations/'
+		if not os.path.exists(self.path_out):
+			os.makedirs(self.path_out)
 
 	def generate(self,object_tags,filename='filename') :
 		et = copy.deepcopy(self.et_base)
