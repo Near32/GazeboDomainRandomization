@@ -1,0 +1,2 @@
+from XMLGenerator import XMLGenerator
+from XMLGenerator import XMLObjectTags

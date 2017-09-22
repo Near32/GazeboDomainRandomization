@@ -12,9 +12,9 @@
 		  </inertial>
 
 		  <visual>
-		    <origin xyz="0 0 0.3"/>
+		    <origin xyz="0 0 0.15"/>
 				 <geometry>
-		      <mesh filename="model://GazeboDomainRandom/models/robot/mesh.dae" scale="0.01 0.01 0.01" />
+		      <mesh filename="model://GazeboDomainRandom/models/robot/mesh.dae" scale="0.005 0.005 0.005" />
 		    </geometry>		    
 		  </visual>
 
