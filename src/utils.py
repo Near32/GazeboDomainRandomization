@@ -29,7 +29,7 @@ def makeboundingbox(x,size=0.2) :
 	y1[0,0] -= 2*size
 	y2[0,0] += 2*size
 	y1[1,0] -= 2*size
-	y2[1,0] += 0.5*size
+	y2[1,0] += 2*size
 	y1[2,0] += 1*size
 	y2[2,0] += 1*size
 	return y1,y2

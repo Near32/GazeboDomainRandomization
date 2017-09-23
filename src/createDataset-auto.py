@@ -27,15 +27,15 @@ def create_dataset(path='./dataset/') :
 	shape_types = [cylindershape, boxshape,sphereshape, rectangleshape]
 	
 	pose_min = np.concatenate( [2.0*np.ones((1,3)), np.zeros((1,3))], axis=1)	
-	pose_min[0][0] = -1.0
+	pose_min[0][0] = 1.0
 	pose_min[0][1] = -10.0
 	pose_min[0][2] = 0.0
-	pose_max = np.concatenate( [2.5*np.ones((1,3)), np.zeros((1,3))], axis=1)
+	pose_max = np.concatenate( [2.5*np.ones((1,3)), 2*np.pi*np.ones((1,3))], axis=1)
 	pose_max[0][0] = 5.0
 	pose_max[0][1] = -pose_min[0][1]
 	pose_max[0][2] = 0.0
 
-	max_occ = 5
+	max_occ = 3
 	
 	listin = list()
 	
@@ -46,12 +46,16 @@ def create_dataset(path='./dataset/') :
 		listin.append( (shF, occ) )
 	
 	#Add the model :
-	pose_min[0][0] = 0.5
+	pose_min[0][0] = 1.0
 	pose_min[0][1] = -5.0
 	pose_min[0][2] = 0.0
 	pose_max[0][0] = 5.0
 	pose_max[0][1] = -pose_min[0][1]
 	pose_max[0][2] = 0.0
+	pose_max[0][3] = 0
+	pose_max[0][4] = 0
+	pose_max[0][5] = 2*np.pi
+	
 	shpr = ShapeParamsRanges(shape_type='model', shape_pose_min=pose_min, shape_pose_max=pose_max, shape_color_list=colors)
 	shF = ShapeFactory(params=shpr)
 	occ = OccParamsRanges(occ_min=1,occ_max=3)
@@ -148,6 +152,7 @@ def create_dataset(path='./dataset/') :
 			pose3d = [ np.reshape( model.getPose()[0,0:3], (3,1) ) for model in model_params ]
 			#REFRAMING :
 			pose3d = reframing(pose3d)
+
 		elif key == ord('c') :
 			#create new config :
 			cfact.changeOrientation()
@@ -159,7 +164,19 @@ def create_dataset(path='./dataset/') :
 			pose3d = [ np.reshape( model.getPose()[0,0:3], (3,1) ) for model in model_params ]
 			#REFRAMING :
 			pose3d = reframing(pose3d)
-		
+
+		elif key == ord('v') :
+			#create new config :
+			cfact.changePose()
+			cfact.changeSpawned()
+			
+			#retrieve the position of the model :
+			shape_list = cfact.getCurrentConfiguration().getShapeList()
+			model_params = [ shape for shape in shape_list if shape.getType() == 'model' ]
+			pose3d = [ np.reshape( model.getPose()[0,0:3], (3,1) ) for model in model_params ]
+			#REFRAMING :
+			pose3d = reframing(pose3d)
+
 		elif key == ord('p') :
 			listobj = []
 			for i in range(len(pose3d)) :

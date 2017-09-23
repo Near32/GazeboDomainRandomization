@@ -11,9 +11,9 @@
 	-->
 	
 	<!-- Convert an xacro and put on parameter server -->
-	<param name="robot_description" command="$(find xacro)/xacro.py '$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/model.urdf.xacro' name:='$(arg name)' color:='$(arg color)'" />
+	<param name="robot_description_$(arg name)" command="$(find xacro)/xacro.py '$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/model.urdf.xacro' name:='$(arg name)' color:='$(arg color)'" />
   
   <!-- Spawn a model into Gazebo -->
-	<node name="spawn_model_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -z $(arg Z) -x $(arg X) -y $(arg Y) -model $(arg name)" />
+	<node name="spawn_model_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-param robot_description_$(arg name) -urdf -z $(arg Z) -x $(arg X) -y $(arg Y) -model $(arg name)" />
 	
 </launch>

@@ -7,9 +7,9 @@
 	<arg name="Z" default="0.3"/>
 
 	<!-- Convert an xacro and put on parameter server -->
-	<param name="robot_description" command="$(find xacro)/xacro.py '$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/sphere.urdf.xacro' name:='$(arg name)' color:='$(arg color)' scale:='$(arg scale)'" />
+	<param name="robot_description_$(arg name)" command="$(find xacro)/xacro.py '$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/sphere.urdf.xacro' name:='$(arg name)' color:='$(arg color)' scale:='$(arg scale)'" />
   
   <!-- Spawn a model into Gazebo -->
-	<node name="spawn_sphere_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -z $(arg Z) -x $(arg X) -y $(arg Y) -model $(arg name)" />
+	<node name="spawn_sphere_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-param robot_description_$(arg name) -urdf -z $(arg Z) -x $(arg X) -y $(arg Y) -model $(arg name)" />
 	
 </launch>

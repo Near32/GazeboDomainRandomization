@@ -5,8 +5,9 @@ import os
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import Image
-from gazebo_msgs.msg import ModelStates
-from geometry+msgs.msg import Pose, Point, Quaternion
+from gazebo_msgs.msg import ModelState
+from geometry_msgs.msg import Pose, Point, Quaternion
+import tf
 from cv_bridge import CvBridge
 import copy
 
@@ -75,11 +76,11 @@ class ShapeFactory :
 	
 	def randomPose(self) :
 		interval = self.params.shape_pose_max-self.params.shape_pose_min
-		return interval[0,:3]*np.random.random_sample((1,3))+self.params.shape_pose_min[:3]
+		return interval[0,:3]*np.random.random_sample((1,3))+self.params.shape_pose_min[0,:3]
 	
 	def randomOrientation(self) :
 		interval = self.params.shape_pose_max-self.params.shape_pose_min
-		return interval[0,3:]*np.random.random_sample((1,3))+self.params.shape_pose_min[3:]
+		return interval[0,3:]*np.random.random_sample((1,3))+self.params.shape_pose_min[0,3:]
 
 	def changePose(self,shape_param) :
 		shape_param.shape_pose[0,:3] = self.randomPose()
@@ -105,12 +106,12 @@ class Configuration :
 		return self.shape_list	
 
 	def changePose(self) :
-		for shape,factory in zip(self.shape_list,self.factory_list) :
-			shape = factory.chanagePose(shape)
+		for idx in range(len(self.shape_list) ) :
+			self.shape_list[idx] = self.factory_list[idx].changePose( self.shape_list[idx] ) 
 
-	def changeOrientatoin(self) :
-		for shape,factory in zip(self.shape_list,self.factory_list) :
-			shape = factory.chanageOrientation(shape)
+	def changeOrientation(self) :
+		for idx in range(len(self.shape_list) ) :
+			self.shape_list[idx] = self.factory_list[idx].changeOrientation( self.shape_list[idx])
 
 
 class OccParamsRanges :
@@ -198,7 +199,7 @@ class ConfigurationFactory :
 
 			#rospy.loginfo('ERASE : {}'.format(stype) )
 			command = "rosservice call gazebo/delete_model \"{model_name: "+stype+str(counters[stype])+"}\""
-			rospy.loginfo('COMMAND : ERASE : {}'.format(command) )
+			#rospy.loginfo('COMMAND : ERASE : {}'.format(command) )
 			subprocess.Popen(command, shell=True, env=self.env)		
 			
 	def spawn(self, config) :
@@ -211,7 +212,7 @@ class ConfigurationFactory :
 
 		shape_it = dict()
 		
-		for elem in config.shape_list :
+		for idx, elem in enumerate( config.shape_list) :
 			eltype = elem.shape_type
 			elscale = elem.shape_scale
 			elpose = elem.shape_pose.tolist()[0]
@@ -230,15 +231,15 @@ class ConfigurationFactory :
 				shape_it[eltype] = 0
 				
 			elname = eltype+str(shape_it[eltype])
-			elem.setName(elname)
+			self.currentConfiguration.shape_list[idx].setName( str(elname) )
 			
 			command = 'roslaunch -p '+str(self.port)+' GazeboDomainRandom {}.spawn.launch name:={} color:={} scale:={} X:={} Y:={} Z:={}'.format( eltype, elname, elcolor, elscale, elposeX, elposeY, elposeZ)
-			rospy.loginfo('CONFIGURATION SPAWN : COMMAND : {}'.format(command) )
+			#rospy.loginfo('CONFIGURATION SPAWN : COMMAND : {}'.format(command) )
 			subprocess.Popen( command, shell=True, env=self.env)
-			time.sleep(1.0)
+			#time.sleep(1.0)
 	
 		self.spawned = True
-		time.sleep(2.0)	
+		time.sleep(3.0)	
 	
 	def changeOrientation(self) :
 		self.currentConfiguration.changeOrientation()
@@ -246,7 +247,7 @@ class ConfigurationFactory :
 	def changePose(self) :
 		self.currentConfiguration.changePose()
 
-		
+
 	def changeSpawned(self, config=None) :
 		if config is None :
 			config = self.currentConfiguration
@@ -269,15 +270,19 @@ class ConfigurationFactory :
 				elpose[4],
 				elpose[5]
 				)
-			modelstate.pose.orientation = quaternion
+			modelstate.pose.orientation.x = quaternion[0]
+			modelstate.pose.orientation.y = quaternion[1]
+			modelstate.pose.orientation.z = quaternion[2]
+			modelstate.pose.orientation.w = quaternion[3]
 
 			elname = elem.getName()
 			modelstate.model_name = elname
 
-			self.pub.modelstate.publish(modelstate)
 
-			rospy.loginfo('CONFIGURATION SPAWNED : making changes... :\n {}'.format(modelstate) )
-			time.sleep(0.1)
+			self.pub_modelstate.publish(modelstate)
+
+			#rospy.loginfo('CONFIGURATION SPAWNED : making changes... :\n {}'.format(modelstate) )
+			#time.sleep(0.1)
 
 
 	def getCurrentConfiguration(self):
@@ -348,7 +353,7 @@ class Camera :
 			
 		command = 'roslaunch -p '+str(self.port)+' GazeboDomainRandom camera.spawn.launch fovy:={} Z:={}'.format( self.fovy, self.altitude)
 		subprocess.Popen( command, shell=True, env=self.env)
-		time.sleep(1.0)
+		#time.sleep(1.0)
 		
 		self.spawned = True
 		rospy.loginfo('CAMERA SPAWNED : fovy={} // Z={}'.format(self.fovy, self.altitude) )
@@ -357,7 +362,7 @@ class Camera :
 	def _erase(self) :
 		command = "rosservice call gazebo/delete_model \"{model_name: CAMERA}\""
 		subprocess.Popen(command, shell=True, env=self.env)		
-		time.sleep(1.0)
+		#time.sleep(1.0)
 	
 	def project(self, x) :
 		#homogenization :

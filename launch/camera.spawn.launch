@@ -6,9 +6,9 @@
 	<arg name="Z" default="0.3"/>
 	
   <!-- Convert an xacro and put on parameter server -->
-	<param name="robot_description" command="$(find xacro)/xacro.py '$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/camera.urdf.xacro' fovy:='$(arg fovy)' altitude:='$(arg Z)'" />
+	<param name="robot_description_$(arg name)" command="$(find xacro)/xacro.py '$(find GazeboDomainRandom)/models/GazeboDomainRandom/urdf/camera.urdf.xacro' fovy:='$(arg fovy)' altitude:='$(arg Z)'" />
   
   <!-- Spawn a model into Gazebo -->
-	<node name="spawn_camera_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x $(arg X) -y $(arg Y) -model $(arg name)" />
+	<node name="spawn_camera_$(arg name)" pkg="gazebo_ros" type="spawn_model" args="-param robot_description_$(arg name) -urdf -x $(arg X) -y $(arg Y) -model $(arg name)" />
 	
 </launch>
