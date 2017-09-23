@@ -5,6 +5,8 @@ import os
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import Image
+from gazebo_msgs.msg import ModelStates
+from geometry+msgs.msg import Pose, Point, Quaternion
 from cv_bridge import CvBridge
 import copy
 
@@ -15,12 +17,21 @@ class ShapeParams :
 		self.shape_scale = shape_scale
 		self.shape_pose = shape_pose
 		self.shape_color = shape_color
+
+		self.shape_name = None
+
 	
 	def getPose(self) :
 		return self.shape_pose
 		
 	def getType(self) :
 		return self.shape_type
+
+	def setName(self,name) :
+		self.shape_name = name
+
+	def getName(self):
+		return self.shape_name
 					
 class ShapeParamsRanges :
 	def __init__(self, shape_type, shape_scale_max=1.0, shape_pose_min=None, shape_pose_max=None, shape_color_list=['White']) :
@@ -54,26 +65,53 @@ class ShapeFactory :
 		newshape_info.shape_scale = scale
 		
 		#choose pose :
-		interval = self.params.shape_pose_max-self.params.shape_pose_min
-		newshape_info.shape_pose = interval*np.random.random_sample((1,6))+self.params.shape_pose_min
-		
+		newshape_info.shape_pose = np.concatenate( [ self.randomPose(), self.randomOrientation() ], axis=0).reshape((1,6))
+
 		#choose color :
 		nbrcolors = len( self.params.shape_color_list )
 		newshape_info.shape_color = self.params.shape_color_list[ np.random.randint( nbrcolors) ]
 		
 		return newshape_info
-		
+	
+	def randomPose(self) :
+		interval = self.params.shape_pose_max-self.params.shape_pose_min
+		return interval[0,:3]*np.random.random_sample((1,3))+self.params.shape_pose_min[:3]
+	
+	def randomOrientation(self) :
+		interval = self.params.shape_pose_max-self.params.shape_pose_min
+		return interval[0,3:]*np.random.random_sample((1,3))+self.params.shape_pose_min[3:]
+
+	def changePose(self,shape_param) :
+		shape_param.shape_pose[0,:3] = self.randomPose()
+		return shape_param
+
+	def changeOrientation(self,shape_param) :
+		shape_param.shape_pose[0,3:] = self.randomOrientation()
+		return shape_param
+			
+
 class Configuration :
-	def __init__(self, shape_list=[]) :
-		self.shape_list = shape_list
+	def __init__(self, shape_list=[],factory_list=[]) :
+		self.shape_list = copy.deepcopy(shape_list)
+		self.factory_list = copy.deepcopy(factory_list)
 		
-	def append(self, newshape_info) :
+	def append(self, newshape_info,factory=None) :
 		assert(isinstance(newshape_info,ShapeParams))
 		
 		self.shape_list.append( newshape_info)
+		self.factory_list.append(factory)
 	
 	def getShapeList(self) :
 		return self.shape_list	
+
+	def changePose(self) :
+		for shape,factory in zip(self.shape_list,self.factory_list) :
+			shape = factory.chanagePose(shape)
+
+	def changeOrientatoin(self) :
+		for shape,factory in zip(self.shape_list,self.factory_list) :
+			shape = factory.chanageOrientation(shape)
+
 
 class OccParamsRanges :
 	def __init__(self, occ_min=0, occ_max=2 ) :
@@ -111,6 +149,9 @@ class ConfigurationFactory :
 		rospy.init_node('GazeboDomainRandom_node', anonymous=False)#, xmlrpc_port=self.port)#,tcpros_port=self.port)
 		rospy.on_shutdown(self.close)
 	
+	def init_subpub(self) :
+		self.pub_modelstate = rospy.Publisher( '/gazebo/set_model_state', ModelState, queue_size=10)
+
 	def close(self) :
 		#TODO :
 		# end services...
@@ -130,6 +171,7 @@ class ConfigurationFactory :
 		self.init_roscore()
 		self.init_gazebo()
 		self.init_node()	
+		self.init_subpub()
 		
 		
 		
@@ -140,7 +182,7 @@ class ConfigurationFactory :
 			nbrocc = np.random.randint( low=occ.occ_min, high=occ.occ_max)
 			
 			for i in range(nbrocc) :
-				newconfig.append( shapefactory.generate() )
+				newconfig.append( shapefactory.generate(), shapefactory )
 			
 		return newconfig
 	
@@ -188,6 +230,7 @@ class ConfigurationFactory :
 				shape_it[eltype] = 0
 				
 			elname = eltype+str(shape_it[eltype])
+			elem.setName(elname)
 			
 			command = 'roslaunch -p '+str(self.port)+' GazeboDomainRandom {}.spawn.launch name:={} color:={} scale:={} X:={} Y:={} Z:={}'.format( eltype, elname, elcolor, elscale, elposeX, elposeY, elposeZ)
 			rospy.loginfo('CONFIGURATION SPAWN : COMMAND : {}'.format(command) )
@@ -196,7 +239,47 @@ class ConfigurationFactory :
 	
 		self.spawned = True
 		time.sleep(2.0)	
+	
+	def changeOrientation(self) :
+		self.currentConfiguration.changeOrientation()
+
+	def changePose(self) :
+		self.currentConfiguration.changePose()
+
 		
+	def changeSpawned(self, config=None) :
+		if config is None :
+			config = self.currentConfiguration
+
+		for elem in config.shape_list :
+			modelstate = ModelState()
+
+			elpose = elem.shape_pose.tolist()[0]
+			
+			pose = Point()
+			quat = Quaternion()
+
+			pose.x = elpose[0]
+			pose.y = elpose[1]
+			pose.z = elpose[2]
+			modelstate.pose.position = pose
+
+			quaternion = tf.transformations.quaternion_from_euler(
+				elpose[3],
+				elpose[4],
+				elpose[5]
+				)
+			modelstate.pose.orientation = quaternion
+
+			elname = elem.getName()
+			modelstate.model_name = elname
+
+			self.pub.modelstate.publish(modelstate)
+
+			rospy.loginfo('CONFIGURATION SPAWNED : making changes... :\n {}'.format(modelstate) )
+			time.sleep(0.1)
+
+
 	def getCurrentConfiguration(self):
 		return self.currentConfiguration	
 		
