@@ -4,6 +4,9 @@ This is an implementation of some Domain Randomization tools within the [ROS](ht
 
 It can be used to generate virtual datasets for an object recognition task of your choice, as it will automatically generate the bounding boxes for the object we seek to recognize in every generated pictures. The object has to be rendered in a **.dae** file compatible with **Gazebo**, first.
 
+![sample](/doc/images/sample.png)
+![sample1](/doc/images/sample1.png)
+
 ## Requirements
 
 This has been developped and tested using [ROS Indigo](http://wiki.ros.org/indigo/Installation) and [Gazebo v2.2.6](http://gazebosim.org/download).
