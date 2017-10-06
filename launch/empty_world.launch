@@ -1,6 +1,6 @@
 <launch>
   <arg name="world_file"  			default="$(find GazeboDomainRandom)/models/GazeboDomainRandom/worlds/empty+light.world"/>
-	<arg name="gui" 							default="true"/>
+	<arg name="gui" 							default="false"/>
 	
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">

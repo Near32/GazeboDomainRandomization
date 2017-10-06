@@ -9,7 +9,7 @@ def create_dataset(path='./dataset/') :
 	#XML generator :
 	genXML = XMLGenerator(path_out=path)
 	#index to name the pictures :
-	date = '2017_09_22__'
+	date = '2017_10_06__'
 	indexIMG = 0
 	#create the images folder :
 	pathimg = 'images/'
@@ -74,6 +74,7 @@ def create_dataset(path='./dataset/') :
 	fovy = 120
 	altitude = 0.45
 	camera = Camera(fovy=fovy,altitude=altitude,port=cfact.port, env=cfact.env)
+	camera.setPause(False)
 	camera.spawn()
 	
 	#retrieve the position of the model :
@@ -152,9 +153,10 @@ def create_dataset(path='./dataset/') :
 			pose3d = [ np.reshape( model.getPose()[0,0:3], (3,1) ) for model in model_params ]
 			#REFRAMING :
 			pose3d = reframing(pose3d)
+			time.sleep(3)
 
 		elif key == ord('c') :
-			#create new config :
+			#change Orientations :
 			cfact.changeOrientation()
 			cfact.changeSpawned()
 			
@@ -166,7 +168,7 @@ def create_dataset(path='./dataset/') :
 			pose3d = reframing(pose3d)
 
 		elif key == ord('v') :
-			#create new config :
+			#change Positions :
 			cfact.changePose()
 			cfact.changeSpawned()
 			
@@ -178,6 +180,7 @@ def create_dataset(path='./dataset/') :
 			pose3d = reframing(pose3d)
 
 		elif key == ord('p') :
+			#Register the image into the dataset with its annotations :
 			listobj = []
 			for i in range(len(pose3d)) :
 				xp = pose3d[i].copy()

@@ -384,4 +384,14 @@ class Camera :
 			projx[i] /= projx[2]+1e-6
 		
 		return projx
+
+	def setPause(self,pause=True) :
+		if pause==True :
+			subprocess.Popen(['rosservice call /gazebo/pause_physics'], shell=True, env=self.env)
+			rospy.loginfo("ENVIRONMENT "+str(self.port)+" PHYSICS : PAUSED.\n")
+		else :
+			subprocess.Popen(['rosservice call /gazebo/unpause_physics'], shell=True, env=self.env)
+			rospy.loginfo("ENVIRONMENT "+str(self.port)+" PHYSICS : UNPAUSED.\n")
+	
+	
 			
