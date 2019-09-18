@@ -1,2 +1,1 @@
-from XMLGenerator import XMLGenerator
-from XMLGenerator import XMLObjectTags
+from .XMLGenerator import XMLGenerator, XMLObjectTags
